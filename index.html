@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spelling Practice</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f4f6f8;
+    padding: 20px;
+}
+
+button {
+    font-size: 16px;
+    padding: 10px 15px;
+    margin: 5px;
+}
+
+input {
+    font-size: 18px;
+    padding: 10px;
+    width: 80%;
+    margin: 5px;
+}
+
+.result {
+    font-size: 18px;
+    margin-top: 10px;
+}
+
+.revision-box {
+    margin-top: 15px;
+    padding: 18px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #dff9fb, #c7ecee);
+    border: 2px solid #22a6b3;
+    font-size: 20px;
+    font-weight: bold;
+    color: #130f40;
+}
+
+.revision-title {
+    margin-bottom: 10px;
+}
+
+.revision-spelling {
+    margin-top: 12px;
+    font-size: 22px;
+    letter-spacing: 6px;
+    color: #30336b;
+}
+
+hr {
+    margin: 20px 0;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🔊 Spelling Practice</h2>
+
+<button onclick="speakWord()">🔈 Speak Word</button>
+<button onclick="randomWord()">🎲 Random Word</button>
+
+<br><br>
+
+<input id="answer" placeholder="Type spelling here">
+
+<br><br>
+
+<button onclick="checkSpelling()">Check</button>
+<button onclick="nextWord()">Next Word</button>
+
+<div class="result" id="result"></div>
+<div id="revision"></div>
+
+<hr>
+
+<h3>➕ Add New Spelling</h3>
+<input id="newWord" placeholder="Enter new word">
+<br>
+<button onclick="addWord()">Add Spelling</button>
+
+<script>
+let words = ["Fence","Plates","Advertising","Regional","Station","Seminars",
+            "Classical","Concert","Relaxation","Anciety","Coast",];
+
+
+let currentWord = "";
+let wrongWords = [];
+let count = 0;
+let index = 0;
+let isRevision = false;
+
+// ---------- SPEECH ----------
+function speak(text) {
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.9;
+    speechSynthesis.speak(u);
+}
+
+function speakWord() {
+    if (currentWord) speak(currentWord);
+}
+
+// ---------- RANDOM WORD ----------
+function randomWord() {
+    resetUI();
+    isRevision = false;
+    currentWord = words[Math.floor(Math.random() * words.length)];
+    speak(currentWord);
+}
+
+// ---------- NEXT WORD ----------
+function nextWord() {
+    resetUI();
+    count++;
+
+    // 🔁 REVISION WORD
+    if (count % 3 === 0 && wrongWords.length > 0) {
+        currentWord = wrongWords.shift();
+        isRevision = true;
+        showRevisionBox(currentWord);
+        speak(currentWord); // behaves like normal word
+        return;
+    }
+
+    // NORMAL WORD
+    isRevision = false;
+    currentWord = words[index % words.length];
+    index++;
+    speak(currentWord);
+}
+
+// ---------- CHECK SPELLING ----------
+function checkSpelling() {
+    const user = document.getElementById("answer").value.trim().toLowerCase();
+    const res = document.getElementById("result");
+
+    if (!currentWord) return;
+
+    if (user === currentWord.toLowerCase()) {
+        res.innerHTML = "✅ Correct!";
+        res.style.color = "green";
+    } else {
+        res.innerHTML = "❌ Wrong<br>Correct: " + currentWord;
+        res.style.color = "red";
+        wrongWords.push(currentWord);
+    }
+}
+
+// ---------- REVISION UI ----------
+function showRevisionBox(word) {
+    document.getElementById("revision").innerHTML = `
+        <div class="revision-box">
+            <div class="revision-title">🔁 REVISION WORD</div>
+            <button onclick="showRevisionSpelling()">Show Spelling</button>
+            <div id="revSpelling" class="revision-spelling" style="display:none;"></div>
+        </div>
+    `;
+}
+
+function showRevisionSpelling() {
+    document.getElementById("revSpelling").style.display = "block";
+    document.getElementById("revSpelling").innerText =
+        currentWord.split("").join(" ");
+}
+
+// ---------- ADD NEW WORD ----------
+function addWord() {
+    const nw = document.getElementById("newWord").value.trim();
+    if (!nw) return;
+
+    words.push(nw);
+    document.getElementById("newWord").value = "";
+    alert("Added: " + nw);
+}
+
+// ---------- RESET ----------
+function resetUI() {
+    document.getElementById("answer").value = "";
+    document.getElementById("result").innerHTML = "";
+    document.getElementById("revision").innerHTML = "";
+}
+
+// Start app
+nextWord();
+</script>
+
+</body>
+</html>
